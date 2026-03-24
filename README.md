@@ -1,46 +1,51 @@
-# Astro Starter Kit: Basics
+# Abraxas Frontend (Astro + WordPress/WooCommerce)
 
-```sh
-npm create astro@latest -- --template basics
+Frontend en Astro para consumir un backend de WordPress que maneja:
+
+- autenticacion de usuarios
+- catalogo de productos (WooCommerce)
+- resenas de productos
+
+## Requisitos
+
+- Node.js 22+
+- Backend WordPress con WooCommerce activo
+- Endpoint de auth (por ejemplo JWT Auth plugin)
+
+## Variables de entorno
+
+Crea un archivo `.env` en la raiz:
+
+```bash
+PUBLIC_WP_URL="https://tu-wordpress.com"
+PUBLIC_WP_AUTH_ENDPOINT="https://tu-wordpress.com/wp-json/jwt-auth/v1/token"
+
+# Opcional para productos por API wc/v3
+PUBLIC_WC_CONSUMER_KEY="ck_xxxxxxxxx"
+PUBLIC_WC_CONSUMER_SECRET="cs_xxxxxxxxx"
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Nota: todo valor `PUBLIC_` queda expuesto al cliente. Para produccion, se recomienda usar un backend intermedio/BFF o endpoints propios en WordPress para no exponer secretos.
 
-## 🚀 Project Structure
+## Scripts
 
-Inside of your Astro project, you'll see the following folders and files:
+- `npm run dev`: entorno local
+- `npm run build`: build de produccion
+- `npm run preview`: previsualizar build
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+## Estructura principal
+
+- `src/lib/wp.ts`: cliente para auth/productos/resenas
+- `src/lib/types.ts`: tipos TypeScript de WordPress/WooCommerce
+- `src/pages/index.astro`: landing inicial
+- `src/pages/productos.astro`: listado de productos
+- `src/pages/login.astro`: formulario de login JWT
+
+## Arranque rapido
+
+```bash
+npm install
+npm run dev
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Abre `http://localhost:4321`.

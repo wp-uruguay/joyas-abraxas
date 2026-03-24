@@ -1,0 +1,4 @@
+PUBLIC_WP_URL="https://tu-wordpress.com"
+PUBLIC_WP_AUTH_ENDPOINT="https://tu-wordpress.com/wp-json/jwt-auth/v1/token"
+PUBLIC_WC_CONSUMER_KEY="ck_xxxxxxxxx"
+PUBLIC_WC_CONSUMER_SECRET="cs_xxxxxxxxx"
