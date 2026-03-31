@@ -7,8 +7,8 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   const authEndpoint =
-    process.env.NEXT_PUBLIC_WP_AUTH_ENDPOINT ??
-    `${process.env.NEXT_PUBLIC_WP_URL}/wp-json/jwt-auth/v1/token`;
+    process.env.WP_AUTH_ENDPOINT ??
+    `${process.env.WP_URL}/wp-json/jwt-auth/v1/token`;
 
   return (
     <main className="mx-auto max-w-[680px] px-4 py-8">

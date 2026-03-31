@@ -1,19 +1,19 @@
-# Setup WordPress para Frontend Astro (Paso a paso)
+# Setup WordPress para Frontend Next.js (Paso a paso)
 
-Este documento te deja el backend de WordPress/WooCommerce listo para ser consumido desde tu frontend Astro.
+Este documento te deja el backend de WordPress/WooCommerce listo para ser consumido desde tu frontend Next.js.
 
 ## 1. Requisitos iniciales
 
-1. Tener WordPress en HTTPS (produccion) o local con URL fija.
-2. Tener WooCommerce instalado y activado.
-3. Tener una cuenta admin para configuracion.
-4. Confirmar URL base, por ejemplo: `https://tu-wordpress.com`.
+1. Tener WordPress en HTTPS (produccion) o local con URL fija. hecho
+2. Tener WooCommerce instalado y activado. hecho
+3. Tener una cuenta admin para configuracion. hecho
+4. Confirmar URL base, por ejemplo: `https://tu-wordpress.com`. hecho https://api.joyasabraxas.com 
 
 ## 2. Configurar enlaces permanentes
 
 1. Ir a `Ajustes > Enlaces permanentes`.
 2. Seleccionar `Nombre de la entrada`.
-3. Guardar cambios.
+3. Guardar cambios. Hecho
 
 Esto evita problemas con endpoints REST.
 
@@ -21,7 +21,7 @@ Esto evita problemas con endpoints REST.
 
 1. Abrir en navegador:
    - `https://tu-wordpress.com/wp-json`
-2. Debe responder JSON.
+2. Debe responder JSON. Hecho
 
 Si falla, revisar reglas de servidor (Apache/Nginx), plugins de seguridad o cache.
 
@@ -29,10 +29,10 @@ Si falla, revisar reglas de servidor (Apache/Nginx), plugins de seguridad o cach
 
 1. Ir a `WooCommerce > Ajustes > Avanzado > REST API`.
 2. Crear una clave nueva:
-   - Descripcion: `astro-frontend`
-   - Usuario: uno tecnico (no tu admin personal si puedes evitarlo)
+   - Descripcion: `nextjs-frontend`
+   - Usuario: uno tecnico (no tu admin personal si puedes evitarlo) hecho manuel@wpuruguay.com
    - Permisos: `Read` para catalogo. Usa `Read/Write` solo si realmente lo necesitas.
-3. Guardar `Consumer key` y `Consumer secret`.
+3. Guardar `Consumer key` y `Consumer secret`. hecho y agregado a env
 
 Endpoints importantes:
 
@@ -48,14 +48,14 @@ Tu frontend actual usa este endpoint por defecto:
 
 ### Opcion recomendada rapida: plugin JWT Auth
 
-1. Instalar plugin compatible con JWT (por ejemplo "JWT Authentication for WP REST API").
-2. Activarlo.
+1. Instalar plugin compatible con JWT (por ejemplo "JWT Authentication for WP REST API"). hecho
+2. Activarlo. hecho
 3. Configurar clave secreta en `wp-config.php`:
 
 ```php
 define('JWT_AUTH_SECRET_KEY', 'pon-aqui-una-clave-larga-y-segura');
 define('JWT_AUTH_CORS_ENABLE', true);
-```
+``` hecho, pero no se donde tengo que agregar esta clave en el proyecto next
 
 4. Probar login por API:
 
@@ -69,7 +69,7 @@ Debe devolver JSON con `token`.
 
 ## 6. CORS (clave para frontend separado)
 
-Si Astro y WordPress estan en dominios distintos, habilita CORS correctamente.
+Si Next.js y WordPress estan en dominios distintos, habilita CORS correctamente.
 
 1. Permitir origen de tu frontend (ejemplo `https://frontend.tudominio.com`).
 2. Permitir metodos: `GET, POST, PUT, PATCH, DELETE, OPTIONS`.
@@ -95,22 +95,22 @@ Si usas plugin JWT con `JWT_AUTH_CORS_ENABLE`, igual valida reglas en servidor/p
 ## 9. Seguridad minima recomendada
 
 1. No exponer claves de WooCommerce en frontend de produccion.
-2. Para produccion, crear un BFF/proxy (Astro server endpoint o backend aparte) para ocultar secretos.
+2. Para produccion, crear un BFF/proxy (Next.js API Route o backend aparte) para ocultar secretos.
 3. Limitar intentos de login y activar WAF si es posible.
 4. Mantener WordPress, plugins y WooCommerce actualizados.
 
-## 10. Variables que debes usar en Astro
+## 10. Variables que debes usar en Next.js
 
 En tu frontend (`.env`):
 
 ```bash
-PUBLIC_WP_URL="https://tu-wordpress.com"
-PUBLIC_WP_AUTH_ENDPOINT="https://tu-wordpress.com/wp-json/jwt-auth/v1/token"
-PUBLIC_WC_CONSUMER_KEY="ck_xxxxxxxxx"
-PUBLIC_WC_CONSUMER_SECRET="cs_xxxxxxxxx"
+NEXT_PUBLIC_WP_URL="https://tu-wordpress.com"
+NEXT_PUBLIC_WP_AUTH_ENDPOINT="https://tu-wordpress.com/wp-json/jwt-auth/v1/token"
+NEXT_PUBLIC_WC_CONSUMER_KEY="ck_xxxxxxxxx"
+NEXT_PUBLIC_WC_CONSUMER_SECRET="cs_xxxxxxxxx"
 ```
 
-Nota: cualquier variable `PUBLIC_` queda expuesta en el navegador.
+Nota: cualquier variable `NEXT_PUBLIC_` queda expuesta en el navegador.
 
 ## 11. Checklist de validacion final
 
@@ -118,12 +118,12 @@ Nota: cualquier variable `PUBLIC_` queda expuesta en el navegador.
 2. `GET /wp-json/wc/v3/products` devuelve productos.
 3. `GET /wp-json/wc/v3/products/reviews` devuelve reseñas.
 4. `POST /wp-json/jwt-auth/v1/token` devuelve token.
-5. Desde Astro:
+5. Desde Next.js:
    - `/productos` lista catalogo.
    - `/login` inicia sesion y guarda token.
 
 ## 12. Siguiente mejora recomendada
 
-1. Mover consumo WooCommerce con secretos a un endpoint server-side (BFF) para no exponer keys en cliente.
+1. Mover consumo WooCommerce con secretos a un API Route de Next.js (BFF) para no exponer keys en cliente.
 2. Implementar refresh/expiracion de token y logout robusto.
 3. Proteger rutas de cuenta del usuario en frontend.

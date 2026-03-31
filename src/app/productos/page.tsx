@@ -34,7 +34,7 @@ export default async function ProductosPage() {
       </div>
 
       {errorMessage && (
-        <p className="my-4 rounded-lg border border-[#f3c4c4] bg-[#fff0f0] p-3">
+        <p className="my-4 rounded-lg border border-red-900/40 bg-red-950/40 p-3">
           {errorMessage}
         </p>
       )}
@@ -45,35 +45,28 @@ export default async function ProductosPage() {
 
       <section className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
         {products.map((product) => (
-          <article
+          <Link
             key={product.id}
-            className="overflow-hidden rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)]"
+            href={`/productos/${product.slug}`}
+            className="overflow-hidden rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] transition-shadow hover:shadow-md"
           >
             <Image
               src={product.images[0]?.src ?? "/favicon.svg"}
               alt={product.images[0]?.alt || product.name}
               width={400}
               height={180}
-              className="h-[180px] w-full bg-[#f2ece2] object-cover"
+              className="h-[180px] w-full bg-[#1c1a18] object-cover"
             />
             <div className="p-4">
               <h2 className="m-0 mb-1.5 text-base">{product.name}</h2>
               <p className="m-0 font-bold">
                 {product.price ? `$${product.price}` : "Sin precio"}
               </p>
-              <p className="mt-2 mb-3 text-sm text-[var(--color-muted)]">
+              <p className="mt-2 mb-0 text-sm text-[var(--color-muted)]">
                 Rating: {product.average_rating || "0"} ({product.rating_count})
               </p>
-              <a
-                href={product.permalink}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm font-semibold text-[var(--color-brand-strong)]"
-              >
-                Ver en WooCommerce
-              </a>
             </div>
-          </article>
+          </Link>
         ))}
       </section>
     </main>

@@ -2,22 +2,44 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { CartProvider } from "@/lib/cart-context";
+import Header from "@/components/header";
+import { fetchCategories } from "@/lib/wp";
+import type { WPCategory } from "@/lib/types";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  title: "Abraxas | Frontend Next.js + WordPress",
-  description: "Frontend en Next.js para WordPress y WooCommerce",
+  title: "Abraxas | Joyería de Alta Calidad",
+  description: "Joyería artesanal de alta calidad. Descubre nuestras colecciones exclusivas.",
+  icons: {
+    icon: "https://api.joyasabraxas.com/wp-content/uploads/2023/09/cropped-logo_n.png",
+  },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  let categories: WPCategory[] = [];
+  try {
+    const all = await fetchCategories({ perPage: 100 });
+    categories = all.filter((c) => c.parent === 0 && c.slug !== "uncategorized" && c.count > 0);
+  } catch {
+    // API not available
+  }
+
   return (
     <html lang="es" className={cn("font-sans", geist.variable)}>
-      <body>{children}</body>
+      <body>
+        <CartProvider>
+          <Header categories={categories} />
+          <div className="pt-24">
+            {children}
+          </div>
+        </CartProvider>
+      </body>
     </html>
   );
 }

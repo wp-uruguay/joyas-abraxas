@@ -1,55 +1,99 @@
+import { fetchProducts, fetchCategories } from "@/lib/wp";
+import type { WPProduct, WPCategory } from "@/lib/types";
+import HeroSlider, { type HeroSlide } from "@/components/hero-slider";
+import CategoryCarousel from "@/components/category-carousel";
 import Link from "next/link";
 
-export default function HomePage() {
-  return (
-    <main className="mx-auto max-w-[1080px] px-4 py-8 pb-12">
-      <header className="rounded-[20px] border border-[var(--color-line)] bg-[color-mix(in_oklab,white_86%,#f4d6a7)] p-8 shadow-[0_12px_40px_rgb(20_20_20/0.05)]">
-        <p className="m-0 text-xs font-bold uppercase tracking-widest text-[var(--color-muted)]">
-          Next.js + WordPress Headless
-        </p>
-        <h1 className="mt-2 mb-4 text-[clamp(2rem,2.2vw+1rem,3.2rem)] leading-[1.05]">
-          Frontend rapido para WooCommerce
-        </h1>
-        <p className="max-w-[70ch] text-[var(--color-muted)]">
-          Esta base te permite consumir autenticacion de usuarios, catalogo de
-          productos y resenas desde tu backend en WordPress.
-        </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link
-            href="/productos"
-            className="inline-flex items-center justify-center rounded-full bg-[var(--color-brand)] px-5 py-2.5 font-bold text-[#f6fffb] transition-transform hover:-translate-y-0.5 hover:bg-[var(--color-brand-strong)]"
-          >
-            Ver productos
-          </Link>
-          <Link
-            href="/login"
-            className="inline-flex items-center justify-center rounded-full border border-[var(--color-line)] bg-transparent px-5 py-2.5 font-bold text-[var(--color-ink)]"
-          >
-            Iniciar sesion
-          </Link>
-        </div>
-      </header>
+// Map de slugs de categoría → imagen local + copy persuasivo
+const SLIDE_DATA: Record<string, { image: string; tagline: string; buttonLabel: string }> = {
+  anillos: {
+    image: "/ornament/slider/anillos2.jpg",
+    tagline: "Cada anillo lleva consigo una promesa. Descubre piezas únicas que celebran los momentos más importantes de tu vida.",
+    buttonLabel: "Ver Anillos",
+  },
+  caravanas: {
+    image: "/ornament/slider/caravanas.jpg",
+    tagline: "Pequeñas joyas, gran impacto. Caravanas que transforman cualquier look en una declaración de elegancia.",
+    buttonLabel: "Ver Caravanas",
+  },
+  colgantes: {
+    image: "/ornament/slider/colgantes2.jpg",
+    tagline: "Lleva cerca lo que más valoras. Colgantes artesanales que expresan tu esencia con cada movimiento.",
+    buttonLabel: "Ver Colgantes",
+  },
+};
 
-      <section className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
-        <article className="rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
-          <h2 className="mt-0 mb-1.5">Productos</h2>
-          <p className="m-0 text-[var(--color-muted)]">
-            Listado inicial conectado al endpoint REST de WooCommerce.
-          </p>
-        </article>
-        <article className="rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
-          <h2 className="mt-0 mb-1.5">Auth</h2>
-          <p className="m-0 text-[var(--color-muted)]">
-            Formulario de login que almacena token JWT en el navegador.
-          </p>
-        </article>
-        <article className="rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
-          <h2 className="mt-0 mb-1.5">Extensible</h2>
-          <p className="m-0 text-[var(--color-muted)]">
-            Estructura en capas con tipos y cliente API para seguir escalando.
-          </p>
-        </article>
-      </section>
+const SLIDE_ORDER = ["anillos", "caravanas", "colgantes"];
+
+function buildSlides(categories: WPCategory[]): HeroSlide[] {
+  return SLIDE_ORDER.flatMap((slug) => {
+    const data = SLIDE_DATA[slug];
+    if (!data) return [];
+    const cat = categories.find(
+      (c) => c.slug === slug || c.name.toLowerCase() === slug
+    );
+    return [
+      {
+        image: data.image,
+        title: cat?.name ?? slug.charAt(0).toUpperCase() + slug.slice(1),
+        tagline: data.tagline,
+        href: cat ? `/categorias/${cat.id}` : "/categorias",
+        buttonLabel: data.buttonLabel,
+      },
+    ];
+  });
+}
+
+export default async function HomePage() {
+  let categories: WPCategory[] = [];
+
+  try {
+    categories = await fetchCategories({ perPage: 100 });
+    categories = categories.filter(
+      (c) => c.parent === 0 && c.slug !== "uncategorized" && c.count > 0
+    );
+  } catch {
+    // API no disponible — slides usan href de fallback
+  }
+
+  const slides = buildSlides(categories);
+
+  // Fetch products for each category in parallel
+  const categoryProducts = await Promise.all(
+    categories.map((cat) =>
+      fetchProducts({ perPage: 12, category: cat.id }).catch(() => [] as WPProduct[])
+    )
+  );
+
+  return (
+    <main className="-mt-24">
+      <HeroSlider slides={slides} />
+
+      {categories.map((cat, i) => {
+        const products = categoryProducts[i] ?? [];
+        if (!products.length) return null;
+        return (
+          <section key={cat.id} className="mx-auto max-w-[1200px] px-6 py-12">
+            <div className="mb-6 flex items-end justify-between">
+              <div>
+                <h2 className="m-0 text-xl font-light tracking-[0.15em] uppercase text-[var(--color-ink)]">
+                  {cat.name}
+                </h2>
+                {cat.description && (
+                  <p className="mt-1 mb-0 text-sm text-[var(--color-muted)]">{cat.description}</p>
+                )}
+              </div>
+              <Link
+                href={`/categorias/${cat.id}`}
+                className="shrink-0 text-[12px] font-medium uppercase tracking-[0.12em] text-[var(--color-brand)] transition-colors hover:text-[var(--color-brand-strong)]"
+              >
+                Ver todo →
+              </Link>
+            </div>
+            <CategoryCarousel products={products} />
+          </section>
+        );
+      })}
     </main>
   );
 }
