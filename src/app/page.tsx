@@ -1,8 +1,7 @@
 import { fetchProducts, fetchCategories } from "@/lib/wp";
 import type { WPProduct, WPCategory } from "@/lib/types";
 import HeroSlider, { type HeroSlide } from "@/components/hero-slider";
-import CategoryCarousel from "@/components/category-carousel";
-import Link from "next/link";
+import CategorySection from "@/components/category-section";
 
 // Map de slugs de categoría → imagen local + copy persuasivo
 const SLIDE_DATA: Record<string, { image: string; tagline: string; buttonLabel: string }> = {
@@ -73,25 +72,7 @@ export default async function HomePage() {
         const products = categoryProducts[i] ?? [];
         if (!products.length) return null;
         return (
-          <section key={cat.id} className="mx-auto max-w-[1200px] px-6 py-12">
-            <div className="mb-6 flex items-end justify-between">
-              <div>
-                <h2 className="m-0 text-xl font-light tracking-[0.15em] uppercase text-[var(--color-ink)]">
-                  {cat.name}
-                </h2>
-                {cat.description && (
-                  <p className="mt-1 mb-0 text-sm text-[var(--color-muted)]">{cat.description}</p>
-                )}
-              </div>
-              <Link
-                href={`/categorias/${cat.id}`}
-                className="shrink-0 text-[12px] font-medium uppercase tracking-[0.12em] text-[var(--color-brand)] transition-colors hover:text-[var(--color-brand-strong)]"
-              >
-                Ver todo →
-              </Link>
-            </div>
-            <CategoryCarousel products={products} />
-          </section>
+          <CategorySection key={cat.id} cat={cat} products={products} index={i} />
         );
       })}
     </main>

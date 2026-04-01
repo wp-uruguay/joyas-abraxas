@@ -1,39 +1,46 @@
 "use client";
 
-import { useRef } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { WPProduct } from "@/lib/types";
 
 interface CategoryCarouselProps {
   products: WPProduct[];
+  index?: number;
 }
 
-export default function CategoryCarousel({ products }: CategoryCarouselProps) {
-  const trackRef = useRef<HTMLDivElement>(null);
-
-  function scroll(dir: "left" | "right") {
-    const track = trackRef.current;
-    if (!track) return;
-    const cardWidth = track.querySelector("a")?.offsetWidth ?? 260;
-    track.scrollBy({ left: dir === "right" ? cardWidth + 16 : -(cardWidth + 16), behavior: "smooth" });
-  }
+export default function CategoryCarousel({ products, index = 0 }: CategoryCarouselProps) {
+  const [paused, setPaused] = useState(false);
 
   if (!products.length) {
     return <p className="text-sm text-[var(--color-muted)]">Sin productos disponibles.</p>;
   }
 
+  // Alternating direction: even → left, odd → right
+  const animationName = index % 2 === 0 ? "auto-scroll-left" : "auto-scroll-right";
+  const duration = `${Math.max(products.length * 3.5, 24)}s`;
+
+  // Duplicate list for seamless infinite loop
+  const looped = [...products, ...products];
+
   return (
-    <div className="relative">
-      {/* Scroll track */}
+    <div
+      className="overflow-hidden"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
       <div
-        ref={trackRef}
-        className="flex gap-4 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex gap-4"
+        style={{
+          width: "max-content",
+          animation: `${animationName} ${duration} linear infinite`,
+          animationPlayState: paused ? "paused" : "running",
+        }}
       >
-        {products.map((product) => (
+        {looped.map((product, i) => (
           <Link
-            key={product.id}
+            key={`${product.id}-${i}`}
             href={`/productos/${product.slug}`}
             className="group flex w-[220px] shrink-0 flex-col overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] transition-shadow hover:shadow-[0_4px_24px_rgba(0,0,0,0.4)]"
           >
@@ -52,7 +59,7 @@ export default function CategoryCarousel({ products }: CategoryCarouselProps) {
                 </div>
               )}
               {product.sale_price && product.sale_price !== product.regular_price && (
-                <span className="absolute top-2 left-2 rounded-full bg-[var(--color-brand)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--color-panel)]">
+                <span className="absolute top-2 left-2 rounded-full bg-[var(--color-brand)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
                   Oferta
                 </span>
               )}
@@ -75,22 +82,6 @@ export default function CategoryCarousel({ products }: CategoryCarouselProps) {
           </Link>
         ))}
       </div>
-
-      {/* Arrow buttons */}
-      <button
-        onClick={() => scroll("left")}
-        className="absolute left-0 top-1/2 -translate-x-4 -translate-y-1/2 flex size-9 cursor-pointer items-center justify-center rounded-full border border-[var(--color-line)] bg-[var(--color-panel)]/90 text-[var(--color-ink)] shadow-md backdrop-blur-sm transition-colors hover:text-[var(--color-brand)]"
-        aria-label="Anterior"
-      >
-        <ChevronLeft size={18} />
-      </button>
-      <button
-        onClick={() => scroll("right")}
-        className="absolute right-0 top-1/2 translate-x-4 -translate-y-1/2 flex size-9 cursor-pointer items-center justify-center rounded-full border border-[var(--color-line)] bg-[var(--color-panel)]/90 text-[var(--color-ink)] shadow-md backdrop-blur-sm transition-colors hover:text-[var(--color-brand)]"
-        aria-label="Siguiente"
-      >
-        <ChevronRight size={18} />
-      </button>
     </div>
   );
 }

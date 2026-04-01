@@ -195,3 +195,13 @@ a {
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
 .delay-450 { animation-delay: 450ms; }
+
+@keyframes auto-scroll-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes auto-scroll-right {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
